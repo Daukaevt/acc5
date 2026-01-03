@@ -1,6 +1,14 @@
 server:
   port: 8761
+
 eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+    # Добавляем service-url, чтобы сервер сам понимал, где он находится, 
+    # это помогает избежать некоторых ошибок в логах
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: eureka-server
+    prefer-ip-address: true

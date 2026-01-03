@@ -3,13 +3,12 @@ spring:
     name: hello-service
 
 server:
-  port: 0 # Случайный порт
+  port: 8083
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-server:8761/eureka/
   instance:
-    # Генерируем уникальный ID, чтобы видеть разные запущенные копии
-     instance-id: ${spring.application.name}:${random.value}
-     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+    prefer-ip-address: true

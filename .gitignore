@@ -1,0 +1,51 @@
+# Maven
+# Игнорируем папки target во всех подпроектах
+**/target/
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Системные и IDE файлы
+HELP.md
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+.idea
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# VS Code
+.vscode/
+
+accaunt-manag9-eureka-server/src/main/resources/application.properties
+
+# Игнорировать все application-secrets.yml в проекте
+**/application-secrets.yml
+
+
+
+.env
+**/.env
+*.pem
+
+# Игнорируем логи JVM crash
+*.log
+hs_err_pid*.log
+
