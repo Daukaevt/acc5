@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: auth-service
+  cloud:
+    vault:
+      uri: http://vault:8200
+      token: my-root-token
+      kv:
+        enabled: true
+  config:
+    import: "vault://secret/auth-service"
+
+eureka:
+  client:
+     # Отключаем поиск Jersey фабрик
+     webclient:
+        enabled: false 
+     # Указываем адрес сервера
+     serviceUrl:
+        defaultZone: http://b9-eureka-server:8761/eureka/

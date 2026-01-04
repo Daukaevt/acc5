@@ -5,7 +5,6 @@ services:
     ports:
       - "8761:8761"
     healthcheck:
-      # Убедись, что actuator есть в pom.xml
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
       timeout: 5s
@@ -20,7 +19,7 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://b9-eureka-server:8761/eureka/
 
   hello-world:
     build: ./b9-hello-world-service
@@ -29,6 +28,32 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      # Рекомендую фикс порт, но 0 тоже заведется через Эврику
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://b9-eureka-server:8761/eureka/
       - SERVER_PORT=8083
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "my-root-token-qwerty12345"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+  
+  auth-service:
+    build: ./b9-auth-service
+    container_name: b9-auth-service
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
+      - SPRING_CLOUD_VAULT_URI=http://vault:8200
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://b9-eureka-server:8761/eureka/
