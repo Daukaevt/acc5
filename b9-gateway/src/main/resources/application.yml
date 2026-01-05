@@ -7,10 +7,17 @@ spring:
   cloud:
     gateway:
       routes:
+        # Маршрут для Hello Service
         - id: hello_world_route
           uri: lb://hello-service
           predicates:
             - Path=/hello/**
+
+        # НОВЫЙ маршрут для Auth Service
+        - id: auth_service_route
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/auth/**
 
 eureka:
   instance:

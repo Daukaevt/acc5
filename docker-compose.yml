@@ -50,6 +50,8 @@ services:
   auth-service:
     build: ./b9-auth-service
     container_name: b9-auth-service
+    ports:
+      - "8082:8080"  # Теперь Auth Service будет доступен на 8082 порту
     depends_on:
       vault:
         condition: service_healthy
