@@ -1,40 +1,17 @@
 services:
+  # 1. Сервер имен (Eureka)
   eureka-server:
     build: ./b9-eureka
-    container_name: b9-eureka-server
+    container_name: eureka-server
     ports:
       - "8761:8761"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  api-gateway:
-    build: ./b9-gateway
-    container_name: b9-api-gateway
-    ports:
-      - "8080:8080"
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      vault:
-        condition: service_healthy # Ждем, пока Vault оживет
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://b9-eureka-server:8761/eureka/
-      - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
-      - SPRING_CLOUD_VAULT_URI=http://vault:8200
-
-  hello-world:
-    build: ./b9-hello-world-service
-    container_name: b9-hello-world
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://b9-eureka-server:8761/eureka/
-      - SERVER_PORT=8083
-
+  # 2. Хранилище секретов (Vault)
   vault:
     image: hashicorp/vault:latest
     container_name: vault
@@ -48,18 +25,49 @@ services:
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 5s
-      timeout: 1s
+      timeout: 2s
       retries: 3
-  
+
+  # 3. Шлюз (Gateway) - Исправлено имя хоста Эврики
+  api-gateway:
+    build: ./b9-gateway
+    container_name: b9-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
+      - SPRING_CLOUD_VAULT_URI=http://vault:8200
+
+  # 4. Сервис приветствия - ВНИМАНИЕ: имя должно совпадать с тем, что в Эврике!
+  hello-service: # Поменял ключ с hello-world на hello-service
+    build: ./b9-hello-world-service
+    container_name: b9-hello-service
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_APPLICATION_NAME=HELLO-SERVICE  # Явно задаем имя для Эврики
+      - SERVER_PORT=8083
+
+  # 5. Сервис авторизации
   auth-service:
     build: ./b9-auth-service
     container_name: b9-auth-service
     ports:
-      - "8082:8080"  # Теперь Auth Service будет доступен на 8082 порту
+      - "8082:8080"
     depends_on:
+      eureka-server:
+        condition: service_healthy
       vault:
         condition: service_healthy
     environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://b9-eureka-server:8761/eureka/

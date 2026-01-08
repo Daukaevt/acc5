@@ -1,6 +1,6 @@
 spring:
   application:
-    name: hello-service
+    name: B9-HELLO-WORLD
 
 server:
   port: 8083

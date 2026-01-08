@@ -4,42 +4,36 @@ server:
 spring:
   application:
     name: b9-gateway-service
-  
-  # 1. КРИТИЧЕСКИ ВАЖНО для Spring Boot 3+: разрешаем импорт из Vault
   config:
     import: "vault://"
-
   cloud:
     gateway:
       routes:
-        # Маршрут для Hello Service
         - id: hello_world_route
-          uri: lb://hello-service
+          uri: lb://HELLO-SERVICE  # Должно быть в точности как в Dashboard Эврики!
           predicates:
             - Path=/hello/**
           filters:
-            - name: AuthenticationFilter # Используем полное имя или имя бина
-
-        # Маршрут для Auth Service
+            - AuthenticationFilter
         - id: auth_service_route
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/auth/**
-
-    # 2. Перенесли vault строго внутрь секции spring.cloud
     vault:
-      uri: http://vault:8200 # Удобнее использовать uri вместо host/port
+      uri: http://vault:8200
       authentication: TOKEN
-      token: ${SPRING_CLOUD_VAULT_TOKEN}
+      token: ${SPRING_CLOUD_VAULT_TOKEN:my-root-token-qwerty12345}
       kv:
         enabled: true
         backend: secret
         default-context: application
 
+jwt:
+  # Просто строка-заглушка. Vault заменит её автоматически при старте.
+  secret: "placeholder_key_gateway_32_chars_long"
+
 eureka:
-  instance:
-    prefer-ip-address: true
   client:
-    registry-fetch-interval-seconds: 5
     service-url:
-      defaultZone: http://b9-eureka-server:8761/eureka/ # Проверь имя хоста: b9-eureka-server или eureka-server
+      # Имя должно строго совпадать с именем в docker-compose!
+      defaultZone: http://eureka-server:8761/eureka/

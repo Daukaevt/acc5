@@ -1,14 +1,17 @@
 package com.wixsite.mupbam1.b9_gateway.filter;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -27,12 +30,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     @Override
     public GatewayFilter apply(Config config) {
-        return ((exchange, chain) -> {
-            // 1. Проверяем, нужен ли вообще токен для этого пути
+        return (exchange, chain) -> {
+            // 1. Проверяем, защищен ли путь
             if (validator.isSecured.test(exchange.getRequest())) {
+                
                 // 2. Проверяем наличие заголовка Authorization
                 if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    throw new RuntimeException("Missing Authorization header");
+                    return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);
                 }
 
                 String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
@@ -41,16 +45,29 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 }
 
                 try {
-                    // 3. Валидируем токен тем же ключом из Vault
+                    // 3. Валидируем токен
                     Jwts.parserBuilder()
-                        .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
-                        .build()
-                        .parseClaimsJws(authHeader);
+                            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                            .build()
+                            .parseClaimsJws(authHeader);
+                    
                 } catch (Exception e) {
-                    throw new RuntimeException("Unauthorized access to application");
+                    // Если токен просрочен, кривой или подпись не совпала
+                    return onError(exchange, "Invalid or Expired Token", HttpStatus.UNAUTHORIZED);
                 }
             }
             return chain.filter(exchange);
-        });
+        };
+    }
+
+    // Метод для красивого завершения запроса с нужным HTTP статусом
+    private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(httpStatus);
+        
+        // Дополнительно можно логировать ошибку здесь, чтобы видеть её в консоли Гейтвея
+        System.out.println("Auth Error: " + err); 
+        
+        return response.setComplete();
     }
 }

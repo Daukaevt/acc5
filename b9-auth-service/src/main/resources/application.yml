@@ -1,32 +1,25 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: auth-service
-  
-  # 1. Исправленный импорт (Spring Boot 3 подтянет данные по имени приложения и из application)
   config:
     import: "vault://"
-
   cloud:
     vault:
       uri: http://vault:8200
-      # В продакшене лучше оставить переменную ${SPRING_CLOUD_VAULT_TOKEN}
-      token: my-root-token-qwerty12345 
+      token: ${SPRING_CLOUD_VAULT_TOKEN:my-root-token-qwerty12345}
       kv:
         enabled: true
         backend: secret
-        # Так как мы вчера положили секрет в общую папку:
-        default-context: application 
+        default-context: application
 
 eureka:
   client:
-    # 2. Правильное отключение ненужных компонентов и настройка зоны
-    register-with-eureka: true
-    fetch-registry: true
     service-url:
-      defaultZone: http://b9-eureka-server:8761/eureka/
-  instance:
-    prefer-ip-address: true
+      defaultZone: http://eureka-server:8761/eureka/
 
-    # блок подстраховки:
 jwt:
-  secret: ${jwt.secret:default_temporary_secret_key_32_chars_long}
+  # Такая же заглушка, как в гейтвее.
+  secret: "placeholder_key_auth_32_chars_long"

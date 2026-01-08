@@ -49,3 +49,9 @@ accaunt-manag9-eureka-server/src/main/resources/application.properties
 *.log
 hs_err_pid*.log
 dev_crib/
+
+# Скрипты запуска с секретами
+start.sh
+
+# Данные Vault (если ты настроил сохранение на диск)
+vault/data/

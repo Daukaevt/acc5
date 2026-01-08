@@ -2,13 +2,14 @@ server:
   port: 8761
 
 eureka:
+  instance:
+    # Имя должно СТРОГО совпадать с названием сервиса в docker-compose.yml
+    hostname: eureka-server 
+    # Для СЕРВЕРА в докере лучше false, чтобы он использовал hostname для ссылок
+    prefer-ip-address: false
   client:
     register-with-eureka: false
     fetch-registry: false
-    # Добавляем service-url, чтобы сервер сам понимал, где он находится, 
-    # это помогает избежать некоторых ошибок в логах
     service-url:
+      # Ссылаемся на самого себя по правильному имени
       defaultZone: http://eureka-server:8761/eureka/
-  instance:
-    hostname: eureka-server
-    prefer-ip-address: true
