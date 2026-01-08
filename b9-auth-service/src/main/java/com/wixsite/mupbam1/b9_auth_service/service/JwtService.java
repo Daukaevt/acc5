@@ -15,8 +15,8 @@ import java.util.Map;
 public class JwtService {
 
     // Тот самый ключ, который мы только что вытащили из Vault
-    @Value("${jwt.secret}")
-    private String secret;
+	@Value("${jwt.secret:default_temporary_secret_key_32_chars_long}")
+	private String secret;
 
     // Время жизни токена (например, 24 часа)
     private final long expirationTime = 86400000;
