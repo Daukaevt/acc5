@@ -31,28 +31,35 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            // 1. Проверяем, защищен ли путь
             if (validator.isSecured.test(exchange.getRequest())) {
+                String token = null;
+
+                // 1. Пытаемся достать токен из заголовка Authorization
+                if (exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        token = authHeader.substring(7);
+                    }
+                } 
                 
-                // 2. Проверяем наличие заголовка Authorization
-                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);
+                // 2. Если в заголовке нет, ищем в Cookie (для нашего редиректа)
+                if (token == null && exchange.getRequest().getCookies().containsKey("jwt")) {
+                    token = exchange.getRequest().getCookies().getFirst("jwt").getValue();
                 }
 
-                String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    authHeader = authHeader.substring(7);
+                // 3. Если токена нет нигде — ошибка
+                if (token == null) {
+                    return onError(exchange, "Missing Authorization Credentials", HttpStatus.UNAUTHORIZED);
                 }
 
                 try {
-                    // 3. Валидируем токен
+                    // 4. Валидируем токен
                     Jwts.parserBuilder()
                             .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
                             .build()
-                            .parseClaimsJws(authHeader);
+                            .parseClaimsJws(token);
                     
                 } catch (Exception e) {
-                    // Если токен просрочен, кривой или подпись не совпала
                     return onError(exchange, "Invalid or Expired Token", HttpStatus.UNAUTHORIZED);
                 }
             }
@@ -60,14 +67,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         };
     }
 
-    // Метод для красивого завершения запроса с нужным HTTP статусом
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
-        
-        // Дополнительно можно логировать ошибку здесь, чтобы видеть её в консоли Гейтвея
         System.out.println("Auth Error: " + err); 
-        
         return response.setComplete();
     }
 }

@@ -19,6 +19,8 @@ spring:
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/auth/**
+      default-filters:
+        - PreserveHostHeader # Это заставит сохранять 'localhost:8080' в заголовках
     vault:
       uri: http://vault:8200
       authentication: TOKEN

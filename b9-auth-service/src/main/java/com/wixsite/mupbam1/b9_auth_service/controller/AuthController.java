@@ -26,25 +26,32 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // Показывает страницу логина (нужен login.html в templates)
     @GetMapping("/login")
     public String loginPage() { 
         return "login"; 
     }
-
-    // ОБЯЗАТЕЛЬНО: Аннотация PostMapping для обработки данных формы или curl
+    
     @PostMapping("/login")
-    @ResponseBody // Добавь это, если хочешь вернуть токен текстом, а не делать редирект
-    public String login(@RequestParam String username, @RequestParam String password, HttpServletResponse response) {
+    // @ResponseBody УДАЛЯЕМ, чтобы сработал редирект
+    public String login(@RequestParam String username, @RequestParam String password,
+    		HttpServletResponse response) {
         String token = authService.login(username, password);
+        
+        // Создаем защищенную куку
         Cookie cookie = new Cookie("jwt", token);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
+        cookie.setHttpOnly(true); // Защита от XSS (JS не прочитает)
+        cookie.setPath("/");      // Доступна на всем домене/гейтвее
+        
+        // Если работаешь без HTTPS локально, Secure(true) может не давать куку, 
+        // но для продакшена это обязательно:
+        // cookie.setSecure(true); 
+
         response.addCookie(cookie);
-        return token; // Для теста возвращаем сам токен
+        
+        // Редирект на эндпоинт Hello-World сервиса через Gateway
+        return "redirect:/hello";
     }
 
-    // НОВОЕ: Добавляем регистрацию
     @PostMapping("/register")
     @ResponseBody
     public String register(@RequestParam String username, @RequestParam String password) {
