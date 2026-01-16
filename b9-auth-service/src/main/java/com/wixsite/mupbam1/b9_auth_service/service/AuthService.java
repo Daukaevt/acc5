@@ -15,12 +15,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public void register(String username, String password) {
+    public String register(String username, String password) { // <--- Меняем void на String
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("ROLE_USER");
         userRepository.save(user);
+        
+        return "User " + username + " registered successfully!"; // <--- Добавляем возврат текста
     }
 
     public String login(String username, String password) {

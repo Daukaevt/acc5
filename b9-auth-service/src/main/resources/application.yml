@@ -4,6 +4,24 @@ server:
 spring:
   application:
     name: auth-service
+  
+  # --- ДОБАВЛЯЕМ СЮДА ---
+  datasource:
+    url: jdbc:h2:mem:authdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true      # Чтобы ты мог зайти в консоль БД через браузер
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update   # Сама создаст таблицы на основе твоих Entity
+    show-sql: true       # Будет писать в логи все запросы к БД (удобно для отладки)
+  # ----------------------
+
   config:
     import: "vault://"
   cloud:
@@ -21,5 +39,4 @@ eureka:
       defaultZone: http://eureka-server:8761/eureka/
 
 jwt:
-  # Такая же заглушка, как в гейтвее.
   secret: "placeholder_key_auth_32_chars_long"

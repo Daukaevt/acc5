@@ -7,10 +7,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @Controller
@@ -22,31 +23,43 @@ public class AuthController {
 
     public AuthController(JwtService jwtService, AuthService authService) {
         this.jwtService = jwtService;
-		this.authService = authService;
+        this.authService = authService;
     }
-    
-    @GetMapping("/login")
-    public String loginPage(Model model) { return "login"; }
 
-    @GetMapping("/test")
-    public String testGet() {
-        return "Контроллер виден, GET метод работает!";
+    // Показывает страницу логина (нужен login.html в templates)
+    @GetMapping("/login")
+    public String loginPage() { 
+        return "login"; 
     }
-    
+
+    // ОБЯЗАТЕЛЬНО: Аннотация PostMapping для обработки данных формы или curl
+    @PostMapping("/login")
+    @ResponseBody // Добавь это, если хочешь вернуть токен текстом, а не делать редирект
     public String login(@RequestParam String username, @RequestParam String password, HttpServletResponse response) {
         String token = authService.login(username, password);
-        // Сохраняем токен в Cookie, чтобы браузер его помнил
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         response.addCookie(cookie);
-        return "redirect:/home"; // На главную после входа
+        return token; // Для теста возвращаем сам токен
     }
-    
+
+    // НОВОЕ: Добавляем регистрацию
+    @PostMapping("/register")
+    @ResponseBody
+    public String register(@RequestParam String username, @RequestParam String password) {
+        return authService.register(username, password);
+    }
+
+    @GetMapping("/test")
+    @ResponseBody
+    public String testGet() {
+        return "Контроллер виден, GET метод работает!";
+    }
 
     @GetMapping("/token")
+    @ResponseBody
     public String getToken(@RequestParam String name) {
-        // В будущем здесь будет проверка пароля, а пока просто выпускаем токен
         return jwtService.generateToken(name);
     }
 }
