@@ -6,7 +6,9 @@ import com.wixsite.mupbam1.b9_auth_service.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,5 +70,14 @@ public class AuthController {
     @ResponseBody
     public String getToken(@RequestParam String name) {
         return jwtService.generateToken(name);
+    }
+    
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseBody
+    public String handleRuntimeException(RuntimeException e, HttpServletResponse response) {
+        // Устанавливаем статус 401 (Unauthorized) вместо 403
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        // Возвращаем текст ошибки: "User not found" или "Invalid password"
+        return "Login Error: " + e.getMessage();
     }
 }
