@@ -53,14 +53,24 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 }
 
                 try {
-                    // 4. Валидируем токен
-                    Jwts.parserBuilder()
+                    // 4. Валидируем токен и извлекаем имя пользователя
+                    String username = Jwts.parserBuilder()
                             .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
                             .build()
-                            .parseClaimsJws(token);
-                    
+                            .parseClaimsJws(token)
+                            .getBody()
+                            .getSubject();
+
+                    // 5. Пробрасываем имя пользователя в заголовке X-User-Name для микросервисов
+                    ServerWebExchange modifiedExchange = exchange.mutate()
+                            .request(exchange.getRequest().mutate()
+                                    .header("X-User-Name", username)
+                                    .build())
+                            .build();
+
+                    return chain.filter(modifiedExchange);
+
                 } catch (Exception e) {
-                    // Если токен "кривой" или просрочен — тоже на логин
                     return redirectToLogin(exchange);
                 }
             }
@@ -70,12 +80,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     private Mono<Void> redirectToLogin(ServerWebExchange exchange) {
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.SEE_OTHER); // Статус 303 для корректного редиректа браузером
+        response.setStatusCode(HttpStatus.SEE_OTHER);
         response.getHeaders().set(HttpHeaders.LOCATION, "/auth/login");
         return response.setComplete();
     }
 
-    // Оставляем старый метод на случай, если он понадобится для других нужд
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
