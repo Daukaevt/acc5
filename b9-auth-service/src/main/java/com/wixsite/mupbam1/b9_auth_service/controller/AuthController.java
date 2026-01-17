@@ -28,36 +28,35 @@ public class AuthController {
         this.authService = authService;
     }
 
+    // Добавляем этот метод, чтобы страница открывалась по GET запросу
+    @GetMapping("/register")
+    public String registerPage() {
+        return "register"; // вернет register.html из templates
+    }
+
     @GetMapping("/login")
     public String loginPage() { 
         return "login"; 
     }
     
     @PostMapping("/login")
-    // @ResponseBody УДАЛЯЕМ, чтобы сработал редирект
     public String login(@RequestParam String username, @RequestParam String password,
-    		HttpServletResponse response) {
+                        HttpServletResponse response) {
         String token = authService.login(username, password);
         
-        // Создаем защищенную куку
         Cookie cookie = new Cookie("jwt", token);
-        cookie.setHttpOnly(true); // Защита от XSS (JS не прочитает)
-        cookie.setPath("/");      // Доступна на всем домене/гейтвее
-        
-        // Если работаешь без HTTPS локально, Secure(true) может не давать куку, 
-        // но для продакшена это обязательно:
-        // cookie.setSecure(true); 
-
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");  
         response.addCookie(cookie);
         
-        // Редирект на эндпоинт Hello-World сервиса через Gateway
         return "redirect:/hello";
     }
 
     @PostMapping("/register")
-    @ResponseBody
+    // Убрали @ResponseBody, чтобы сделать редирект на логин после регистрации
     public String register(@RequestParam String username, @RequestParam String password) {
-        return authService.register(username, password);
+        authService.register(username, password);
+        return "redirect:/auth/login"; // После регистрации отправляем на вход
     }
 
     @GetMapping("/test")
@@ -75,9 +74,7 @@ public class AuthController {
     @ExceptionHandler(RuntimeException.class)
     @ResponseBody
     public String handleRuntimeException(RuntimeException e, HttpServletResponse response) {
-        // Устанавливаем статус 401 (Unauthorized) вместо 403
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        // Возвращаем текст ошибки: "User not found" или "Invalid password"
-        return "Login Error: " + e.getMessage();
+        return "Error: " + e.getMessage();
     }
 }
