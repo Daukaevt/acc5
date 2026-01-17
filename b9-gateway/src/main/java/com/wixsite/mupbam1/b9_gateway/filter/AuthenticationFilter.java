@@ -34,7 +34,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             if (validator.isSecured.test(exchange.getRequest())) {
                 String token = null;
 
-                // 1. Пытаемся достать токен из заголовка Authorization
+                // 1. Ищем в заголовке
                 if (exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                     String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
                     if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -42,14 +42,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     }
                 } 
                 
-                // 2. Если в заголовке нет, ищем в Cookie (для нашего редиректа)
+                // 2. Ищем в Cookie
                 if (token == null && exchange.getRequest().getCookies().containsKey("jwt")) {
                     token = exchange.getRequest().getCookies().getFirst("jwt").getValue();
                 }
 
-                // 3. Если токена нет нигде — ошибка
+                // 3. Если токена нет — редирект на логин
                 if (token == null) {
-                    return onError(exchange, "Missing Authorization Credentials", HttpStatus.UNAUTHORIZED);
+                    return redirectToLogin(exchange);
                 }
 
                 try {
@@ -60,13 +60,22 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                             .parseClaimsJws(token);
                     
                 } catch (Exception e) {
-                    return onError(exchange, "Invalid or Expired Token", HttpStatus.UNAUTHORIZED);
+                    // Если токен "кривой" или просрочен — тоже на логин
+                    return redirectToLogin(exchange);
                 }
             }
             return chain.filter(exchange);
         };
     }
 
+    private Mono<Void> redirectToLogin(ServerWebExchange exchange) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(HttpStatus.SEE_OTHER); // Статус 303 для корректного редиректа браузером
+        response.getHeaders().set(HttpHeaders.LOCATION, "/auth/login");
+        return response.setComplete();
+    }
+
+    // Оставляем старый метод на случай, если он понадобится для других нужд
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
