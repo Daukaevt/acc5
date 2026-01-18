@@ -28,7 +28,7 @@ services:
       timeout: 2s
       retries: 3
 
-  # 3. Шлюз (Gateway) - Исправлено имя хоста Эврики
+  # 3. Шлюз (Gateway)
   api-gateway:
     build: ./b9-gateway
     container_name: b9-api-gateway
@@ -44,8 +44,8 @@ services:
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
 
-  # 4. Сервис приветствия - ВНИМАНИЕ: имя должно совпадать с тем, что в Эврике!
-  hello-service: # Поменял ключ с hello-world на hello-service
+  # 4. Сервис приветствия
+  hello-service:
     build: ./b9-hello-world-service
     container_name: b9-hello-service
     depends_on:
@@ -53,7 +53,7 @@ services:
         condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_APPLICATION_NAME=HELLO-SERVICE  # Явно задаем имя для Эврики
+      - SPRING_APPLICATION_NAME=HELLO-SERVICE
       - SERVER_PORT=8083
 
   # 5. Сервис авторизации
@@ -67,7 +67,33 @@ services:
         condition: service_healthy
       vault:
         condition: service_healthy
+      db:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+
+  # 6. БД (PostgreSQL)
+  db:
+    image: postgres:15
+    container_name: auth_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

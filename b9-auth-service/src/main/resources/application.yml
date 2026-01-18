@@ -1,27 +1,29 @@
 server:
   port: 8080
+  # Добавляем, чтобы редиректы после логина работали корректно через Gateway
+  forward-headers-strategy: framework
 
 spring:
   application:
     name: auth-service
   
-  # --- ДОБАВЛЯЕМ СЮДА ---
   datasource:
-    url: jdbc:h2:mem:authdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driverClassName: org.h2.Driver
-    username: sa
-    password: 
-  h2:
-    console:
-      enabled: true      # Чтобы ты мог зайти в консоль БД через браузер
-      path: /h2-console
+    # 'db' — это имя сервиса из твоего docker-compose.yml
+    url: jdbc:postgresql://db:5432/auth_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update   # Сама создаст таблицы на основе твоих Entity
-    show-sql: true       # Будет писать в логи все запросы к БД (удобно для отладки)
-  # ----------------------
-
+      # 'update' автоматически создаст таблицы в Postgres при первом запуске
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        # Указываем диалект именно для Postgres
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
   config:
     import: "vault://"
   cloud:
@@ -39,4 +41,5 @@ eureka:
       defaultZone: http://eureka-server:8761/eureka/
 
 jwt:
+  # Напоминаю: секрет лучше вынести в Vault, но пока оставляем здесь
   secret: "placeholder_key_auth_32_chars_long"
