@@ -16,7 +16,10 @@ public class AuthService {
     private final JwtService jwtService;
 
     public String register(String username, String password) { // <--- Меняем void на String
-        User user = new User();
+    	if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("User already exists!");
+        }
+    	User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("ROLE_USER");
