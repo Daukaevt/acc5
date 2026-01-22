@@ -1,6 +1,14 @@
 spring:
   application:
     name: B9-HELLO-WORLD
+  datasource:
+    url: jdbc:postgresql://photo-db:5432/photo_album
+    username: user
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update # При первом запуске Spring сам создаст таблицы
+    show-sql: true
 
 server:
   port: 8083

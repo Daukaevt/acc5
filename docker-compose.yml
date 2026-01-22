@@ -44,17 +44,22 @@ services:
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
 
-  # 4. Сервис приветствия
+  # 4. Ресурс-сервис (бывший hello-service)
   hello-service:
     build: ./b9-hello-world-service
     container_name: b9-hello-service
     depends_on:
       eureka-server:
         condition: service_healthy
+      photo-db:               # <--- ДОБАВЛЕНО: ждем свою базу
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_APPLICATION_NAME=HELLO-SERVICE
       - SERVER_PORT=8083
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://photo-db:5432/photo_album
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
 
   # 5. Сервис авторизации
   auth-service:
@@ -67,18 +72,18 @@ services:
         condition: service_healthy
       vault:
         condition: service_healthy
-      db:
+      auth-db:                # <--- Переименовал для ясности
         condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/auth_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
 
-  # 6. БД (PostgreSQL)
-  db:
+  # 6. БД Авторизации
+  auth-db:
     image: postgres:15
     container_name: auth_db
     environment:
@@ -95,5 +100,25 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # 7. БД Фото-альбома
+  photo-db:
+    image: postgres:15
+    container_name: photo_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: photo_album
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d photo_album"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - photo_data:/var/lib/postgresql/data
+
+# Секция Volumes объявляется ОДИН раз в самом конце файла
 volumes:
   postgres_data:
+  photo_data:

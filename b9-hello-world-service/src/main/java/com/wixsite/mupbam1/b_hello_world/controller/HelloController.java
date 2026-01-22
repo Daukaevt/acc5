@@ -5,13 +5,27 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
+import com.wixsite.mupbam1.b_hello_world.repository.PictureRepository;
+
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 public class HelloController {
 
+    private final PictureRepository pictureRepository; // Внедряем репозиторий
+
     @GetMapping("/hello")
-    public String hello(@RequestHeader(value = "X-User-Name", defaultValue = "Guest") String username, Model model) {
+    public String hello(
+            @RequestHeader(value = "X-User-Name", defaultValue = "Guest") String username, 
+            Model model) {
+        
         model.addAttribute("username", username);
         model.addAttribute("firstLetter", username.substring(0, 1).toUpperCase());
+        
+        // Получаем все картинки из базы photo_db
+        model.addAttribute("pictures", pictureRepository.findAll());
+        
         return "hello";
     }
 }
