@@ -1,6 +1,6 @@
 package com.wixsite.mupbam1.b9_auth_service.controller;
 
-import com.wixsite.mupbam1.b9_auth_service.service.AuthService;
+import com.wixsite.mupbam1.b9_auth_service.service.ResourseService;
 import com.wixsite.mupbam1.b9_auth_service.service.JwtService;
 
 import jakarta.servlet.http.Cookie;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final JwtService jwtService;
-    private final AuthService authService;
+    private final ResourseService authService;
 
-    public AuthController(JwtService jwtService, AuthService authService) {
+    public AuthController(JwtService jwtService, ResourseService authService) {
         this.jwtService = jwtService;
         this.authService = authService;
     }
