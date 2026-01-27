@@ -4,15 +4,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity // Используем MVC версию для hello-service
 public class SecurityConfig {
-	@Bean
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -20,17 +22,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Отключаем CSRF, так как мы используем JWT ( stateless )
             .csrf(csrf -> csrf.disable())
-            
-            // 2. Настраиваем доступы
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll() // Разрешаем логин и регистрацию всем
-                .requestMatchers("/hello/api/users/test-error").permitAll() // Разрешаем всем
-                .anyRequest().authenticated()            // Все остальное только по токену
+                // 1. ВАЖНО: Разрешаем Actuator, чтобы сервис не пропадал из Эврики
+                .requestMatchers("/actuator/**").permitAll()
+                // 2. Разрешаем твой тест ошибки
+                .requestMatchers("/hello/api/users/test-error").permitAll()
+                // 3. Остальное под замок
+                .anyRequest().authenticated()
             )
-            
-            // 3. Отключаем сессии (теперь за состояние отвечает JWT)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
