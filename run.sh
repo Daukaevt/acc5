@@ -4,7 +4,7 @@ set -e
 echo "🚀 Запуск по твоей методике..."
 
 # 1. Сборка JAR-файлов
-SERVICES=("b9-eureka" "b9-auth-service" "b9-gateway" "b9-hello-world-service")
+SERVICES=("b9-eureka" "b9-auth-service" "b9-gateway" "b9-hello-world-service" "b9-exception-service")
 for service in "${SERVICES[@]}"; do
     echo "📦 Сборка $service..."
     cd "$service" && chmod +x mvnw && ./mvnw clean package -DskipTests && cd ..
@@ -23,7 +23,7 @@ docker exec -e VAULT_TOKEN="my-root-token-qwerty12345" vault vault kv put secret
 
 # 4. Твой третий этап: Остальные сервисы
 echo "🚀 Шаг 3: Поднимаем прикладные сервисы..."
-docker compose up -d --build hello-service api-gateway auth-service
+docker compose up -d --build hello-service api-gateway auth-service exception-service
 
 # 5. Финальный импорт данных (раз уж мы переносим проект)
 if [ -f "photo_album_final.sql" ]; then

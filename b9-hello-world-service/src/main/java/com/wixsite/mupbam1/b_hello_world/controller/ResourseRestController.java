@@ -31,4 +31,9 @@ public class ResourseRestController {
     public Picture getUserById(@PathVariable Long id) {
         return resourseService.findUserById(id);
     }
+    
+    @GetMapping("/test-error")
+    public void throwError() {
+        throw new RuntimeException("Test Exception for b9-exception-service");
+    }
 }

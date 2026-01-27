@@ -1,4 +1,4 @@
-package com.wixsite.mupbam1.b9_auth_service.config;
+package com.wixsite.mupbam1.b_hello_world.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
