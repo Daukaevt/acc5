@@ -27,7 +27,7 @@ public class SecurityConfig {
                 // 1. ВАЖНО: Разрешаем Actuator, чтобы сервис не пропадал из Эврики
                 .requestMatchers("/actuator/**").permitAll()
                 // 2. Разрешаем твой тест ошибки
-                .requestMatchers("/hello/api/users/test-error").permitAll()
+                .requestMatchers("/hello/**").permitAll()
                 // 3. Остальное под замок
                 .anyRequest().authenticated()
             )

@@ -6,7 +6,10 @@ import com.wixsite.mupbam1.b9_auth_service.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,6 +60,21 @@ public class AuthController {
     public String register(@RequestParam String username, @RequestParam String password) {
         authService.register(username, password);
         return "redirect:/auth/login"; // После регистрации отправляем на вход
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        // Создаем куку с тем же именем "jwt"
+        ResponseCookie deleteCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false) // поставь true, если используешь https
+                .path("/")
+                .maxAge(0)    // Указываем браузеру немедленно удалить куку
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .build();
     }
 
     @GetMapping("/test")
