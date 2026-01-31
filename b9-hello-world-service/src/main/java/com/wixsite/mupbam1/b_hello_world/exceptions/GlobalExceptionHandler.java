@@ -7,26 +7,27 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClient;
 
+import java.time.Instant; // Добавлен необходимый импорт
+import java.util.Arrays;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
  
-    // Создаем клиент один раз. 
-    // ВАЖНО: имя хоста 'exception-service' должно совпадать с именем контейнера в Docker
     private final RestClient restClient = RestClient.create("http://exception-service:8085");
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorLog> handleAndReport(Exception ex) {
         
-        // Формируем отчет
+        // Формируем отчет, используя Instant.now() для корректной даты
         ErrorLog report = new ErrorLog(
             "hello-service", 
             ex.getMessage(), 
-            null, // Можно добавить Arrays.toString(ex.getStackTrace()) если нужно
-            System.currentTimeMillis()
+            Arrays.toString(ex.getStackTrace()), // Добавили stackTrace для информативности
+            Instant.now() // ТЕПЕРЬ ТУТ ОБЪЕКТ ТИПА INSTANT
         );
         
-        // 1. Пытаемся отправить отчет "тихо" (в фоне)
         try {
+            // Отправка в exception-service
             restClient.post()
                       .uri("/log")
                       .body(report)
@@ -34,10 +35,11 @@ public class GlobalExceptionHandler {
                       .toBodilessEntity();
             System.out.println("✅ Error report sent to exception-service");
         } catch (Exception e) {
+            // Печатаем ошибку отправки, чтобы знать, если сервис упал
             System.err.println("❌ Failed to send log: " + e.getMessage());
         }
 
-        // 2. Возвращаем ответ пользователю
+        // Возвращаем JSON пользователю
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(report); 
