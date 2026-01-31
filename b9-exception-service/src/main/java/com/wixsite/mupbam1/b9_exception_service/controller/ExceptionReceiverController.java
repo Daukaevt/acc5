@@ -6,17 +6,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wixsite.mupbam1.b9_exception_service.models.ErrorLog;
+import com.wixsite.mupbam1.b9_exception_service.models.ErrorLogEntity;
+import com.wixsite.mupbam1.b9_exception_service.repository.ErrorLogRepository;
 
 @RestController
 @RequestMapping("/log")
 public class ExceptionReceiverController {
-	@PostMapping
-	public ResponseEntity<String> receiveError(@RequestBody ErrorLog log) {
-	    System.out.println("RECEIVED ERROR FROM: " + log.serviceName());
-	    System.err.println("MESSAGE: " + log.errorMessage());
-	    
-	    // Возвращаем статус, чтобы вызывающий сервис знал, что всё ок
-	    return ResponseEntity.ok("Diagnostic data captured by Exception Service");
-	}
+
+    private final ErrorLogRepository repository;
+
+    // Внедряем через конструктор (лучшая практика)
+    public ExceptionReceiverController(ErrorLogRepository repository) {
+        this.repository = repository;
+    }
+
+    @PostMapping
+    public ResponseEntity<String> receiveError(@RequestBody ErrorLogEntity log) {
+        // 1. Сохраняем в PostgreSQL
+        ErrorLogEntity savedLog = repository.save(log);
+        
+        // 2. Логируем в консоль для отладки
+        System.out.println("LOG SAVED TO DB. ID: " + savedLog.getId());
+        
+        return ResponseEntity.ok("Diagnostic data stored in exception_db");
+    }
 }

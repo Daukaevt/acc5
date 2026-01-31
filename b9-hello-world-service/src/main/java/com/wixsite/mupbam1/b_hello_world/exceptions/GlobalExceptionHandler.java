@@ -1,42 +1,45 @@
 package com.wixsite.mupbam1.b_hello_world.exceptions;
 
+import com.wixsite.mupbam1.b_hello_world.models.ErrorLog;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClient;
 
-import com.wixsite.mupbam1.b_hello_world.models.ErrorLog;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
  
-    private final RestClient restClient = RestClient.create();
+    // Создаем клиент один раз. 
+    // ВАЖНО: имя хоста 'exception-service' должно совпадать с именем контейнера в Docker
+    private final RestClient restClient = RestClient.create("http://exception-service:8085");
 
     @ExceptionHandler(Exception.class)
-    // 1. Возвращаем объект ErrorLog, чтобы Spring превратил его в JSON на экране
-    public org.springframework.http.ResponseEntity<ErrorLog> handleAndReport(Exception ex) {
+    public ResponseEntity<ErrorLog> handleAndReport(Exception ex) {
         
+        // Формируем отчет
         ErrorLog report = new ErrorLog(
             "hello-service", 
             ex.getMessage(), 
-            null, 
+            null, // Можно добавить Arrays.toString(ex.getStackTrace()) если нужно
             System.currentTimeMillis()
         );
         
+        // 1. Пытаемся отправить отчет "тихо" (в фоне)
         try {
-            // Отправка отчета в exception-service
             restClient.post()
-                      .uri("http://exception-service:8085/log")
+                      .uri("/log")
                       .body(report)
                       .retrieve()
                       .toBodilessEntity();
+            System.out.println("✅ Error report sent to exception-service");
         } catch (Exception e) {
-            // Если сервис диагностики недоступен, пишем в консоль, чтобы не потерять ошибку
-            System.err.println("Failed to send log to exception-service: " + e.getMessage());
+            System.err.println("❌ Failed to send log: " + e.getMessage());
         }
 
-        // 2. Возвращаем отчет пользователю с кодом 500 (Internal Server Error)
-        return org.springframework.http.ResponseEntity
-                .status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+        // 2. Возвращаем ответ пользователю
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(report); 
     }
 }
