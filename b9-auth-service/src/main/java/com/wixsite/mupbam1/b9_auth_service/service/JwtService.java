@@ -21,8 +21,8 @@ public class JwtService {
     private String secret;
 
     // 24 часа в миллисекундах
-    //private final long expirationTime = 86400000;
-    private final long expirationTime = 8640;
+    private final long expirationTime = 86400000;
+    //private final long expirationTime = 8640;
 
 
     // --- ГЕНЕРАЦИЯ ТОКЕНА ---

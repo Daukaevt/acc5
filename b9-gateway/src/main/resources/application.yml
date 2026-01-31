@@ -9,18 +9,29 @@ spring:
   cloud:
     gateway:
       routes:
+        # Маршрут для сервиса исключений (Диагностика)
+        - id: exception_service_route
+          uri: lb://EXCEPTION-SERVICE # Имя из Eureka
+          predicates:
+            - Path=/exception/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+
         - id: hello_world_route
-          uri: lb://HELLO-SERVICE  # Должно быть в точности как в Dashboard Эврики!
+          uri: lb://HELLO-SERVICE
           predicates:
             - Path=/hello/**
           filters:
             - AuthenticationFilter
+            
         - id: auth_service_route
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/auth/**
+
       default-filters:
-        - PreserveHostHeader # Это заставит сохранять 'localhost:8080' в заголовках
+        - PreserveHostHeader
     vault:
       uri: http://vault:8200
       authentication: TOKEN
@@ -31,11 +42,9 @@ spring:
         default-context: application
 
 jwt:
-  # Просто строка-заглушка. Vault заменит её автоматически при старте.
   secret: "placeholder_key_gateway_32_chars_long"
 
 eureka:
   client:
     service-url:
-      # Имя должно строго совпадать с именем в docker-compose!
       defaultZone: http://eureka-server:8761/eureka/
