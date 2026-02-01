@@ -59,6 +59,8 @@ services:
   hello-service:
     build: ./b9-hello-world-service
     container_name: b9-hello-service
+    ports:
+      - "8083:8083"
     depends_on:
       eureka-server:
         condition: service_healthy

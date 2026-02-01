@@ -7,7 +7,7 @@ import com.wixsite.mupbam1.b9_exception_service.repository.ErrorLogRepository;
 import java.util.List;
 
 @RestController
-@RequestMapping("/log")
+@RequestMapping("/exceptions/log")
 public class ExceptionReceiverController {
 
     private final ErrorLogRepository repository;
@@ -18,8 +18,14 @@ public class ExceptionReceiverController {
 
     @PostMapping
     public ResponseEntity<String> receiveError(@RequestBody ErrorLogEntity log) {
-        ErrorLogEntity savedLog = repository.save(log);
-        return ResponseEntity.ok("Diagnostic data stored with ID: " + savedLog.getId());
+        System.out.println("📩 Попытка сохранения лога от: " + log.getServiceName());
+        try {
+            ErrorLogEntity savedLog = repository.save(log);
+            return ResponseEntity.ok("Diagnostic data stored with ID: " + savedLog.getId());
+        } catch (Exception e) {
+            System.err.println("❌ Ошибка при записи в БД: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     // Получить ВСЕ логи (сначала новые)

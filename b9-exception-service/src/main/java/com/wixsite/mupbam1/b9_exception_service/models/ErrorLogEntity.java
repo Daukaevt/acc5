@@ -2,7 +2,6 @@ package com.wixsite.mupbam1.b9_exception_service.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.Instant;
 
 @Entity
 @Table(name = "exception_logs")
@@ -16,9 +15,11 @@ public class ErrorLogEntity {
     private Long id;
     
     private String serviceName;
-    @Column(columnDefinition = "TEXT") // Чтобы влез длинный текст ошибки
+    @Column(columnDefinition = "TEXT")
     private String errorMessage;
     @Column(columnDefinition = "TEXT")
     private String stackTrace;
-    private Instant timestamp;
+
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private java.time.LocalDateTime timestamp; 
 }

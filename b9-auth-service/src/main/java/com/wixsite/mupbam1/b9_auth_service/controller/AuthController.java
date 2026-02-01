@@ -82,6 +82,11 @@ public class AuthController {
     public String testGet() {
         return "Контроллер виден, GET метод работает!";
     }
+    
+    @GetMapping("/test-exception")
+    public void triggerError() {
+        throw new RuntimeException("Test error for Centralized Logging System");
+    }
 
     @GetMapping("/token")
     @ResponseBody
