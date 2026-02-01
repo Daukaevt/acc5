@@ -7,30 +7,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wixsite.mupbam1.b_hello_world.ResourceService.ResourсeService;
+import com.wixsite.mupbam1.b_hello_world.ResourceService.ResourceService;
 import com.wixsite.mupbam1.b_hello_world.entities.Picture;
 import com.wixsite.mupbam1.b_hello_world.exceptions.ResourceNotFoundException; // Импортируем наш новый класс
 
 @RestController
 @RequestMapping("/hello/api/users")
-public class ResourseRestController {
+public class ResourceRestController {
 
-    private final ResourсeService resourсeService;
+    private final ResourceService resourceService;
 
-    public ResourseRestController(ResourсeService resourсeService) {
-        this.resourсeService = resourсeService;
+    public ResourceRestController(ResourceService resourceService) {
+        this.resourceService = resourceService;
     }
 
     @GetMapping
     public List<Picture> getAllUsers() {
         // Сервис сам выкинет ResourceNotFoundException, если список пуст
-        return resourсeService.findAllUsers();
+        return resourceService.findAllUsers();
     }
 
     @GetMapping("/{id}")
     public Picture getUserById(@PathVariable Long id) {
         // Сервис сам выкинет ResourceNotFoundException, если ID не найден
-        return resourсeService.findUserById(id);
+        return resourceService.findUserById(id);
     }
     
     @GetMapping("/test-error")
