@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClient;
 
-import java.time.Instant; // Добавлен необходимый импорт
+import java.time.Instant;
 import java.util.Arrays;
 
 @RestControllerAdvice
@@ -15,31 +15,37 @@ public class GlobalExceptionHandler {
  
     private final RestClient restClient = RestClient.create("http://exception-service:8085");
 
+    // 1. СПЕЦИАЛЬНЫЙ ОБРАБОТЧИК ДЛЯ 404 (Не замусоривает БД)
+    @ExceptionHandler(ResourceNotFoundException.class) // Создай этот класс или используй ResponseStatusException
+    public ResponseEntity<String> handleNotFound(Exception ex) {
+        System.out.println("⚠ User error (404): " + ex.getMessage());
+        // Мы НЕ отправляем это в restClient. Просто отдаем ответ.
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    // 2. ОБЩИЙ ОБРАБОТЧИК (Для реальных багов 500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorLog> handleAndReport(Exception ex) {
         
-        // Формируем отчет, используя Instant.now() для корректной даты
         ErrorLog report = new ErrorLog(
             "hello-service", 
             ex.getMessage(), 
-            Arrays.toString(ex.getStackTrace()), // Добавили stackTrace для информативности
-            Instant.now() // ТЕПЕРЬ ТУТ ОБЪЕКТ ТИПА INSTANT
+            Arrays.toString(ex.getStackTrace()),
+            Instant.now()
         );
         
+        // Отправляем в базу ТОЛЬКО критические ошибки (те, что попали сюда)
         try {
-            // Отправка в exception-service
             restClient.post()
                       .uri("/log")
                       .body(report)
                       .retrieve()
                       .toBodilessEntity();
-            System.out.println("✅ Error report sent to exception-service");
+            System.out.println("✅ Critical error sent to exception-service");
         } catch (Exception e) {
-            // Печатаем ошибку отправки, чтобы знать, если сервис упал
             System.err.println("❌ Failed to send log: " + e.getMessage());
         }
 
-        // Возвращаем JSON пользователю
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(report); 

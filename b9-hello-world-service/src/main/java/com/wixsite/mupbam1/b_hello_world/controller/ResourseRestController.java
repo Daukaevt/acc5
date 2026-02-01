@@ -7,29 +7,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wixsite.mupbam1.b_hello_world.ResourseService.ResourseService;
+import com.wixsite.mupbam1.b_hello_world.ResourceService.ResourсeService;
 import com.wixsite.mupbam1.b_hello_world.entities.Picture;
+import com.wixsite.mupbam1.b_hello_world.exceptions.ResourceNotFoundException; // Импортируем наш новый класс
 
 @RestController
-@RequestMapping("/hello/api/users") // Общий путь для API
+@RequestMapping("/hello/api/users")
 public class ResourseRestController {
 
-    private final ResourseService resourseService;
+    private final ResourсeService resourсeService;
 
-    public ResourseRestController(ResourseService resourseService) {
-        this.resourseService = resourseService;
+    public ResourseRestController(ResourсeService resourсeService) {
+        this.resourсeService = resourсeService;
     }
 
-    // 1. Возвращаем список всех пользователей в JSON
     @GetMapping
     public List<Picture> getAllUsers() {
-        return resourseService.findAllUsers(); 
+        // Сервис сам выкинет ResourceNotFoundException, если список пуст
+        return resourсeService.findAllUsers();
     }
 
-    // 2. Возвращаем конкретного пользователя по ID в JSON
     @GetMapping("/{id}")
     public Picture getUserById(@PathVariable Long id) {
-        return resourseService.findUserById(id);
+        // Сервис сам выкинет ResourceNotFoundException, если ID не найден
+        return resourсeService.findUserById(id);
     }
     
     @GetMapping("/test-error")

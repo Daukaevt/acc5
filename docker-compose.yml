@@ -5,6 +5,11 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
+    environment:
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
       interval: 10s
@@ -20,8 +25,11 @@ services:
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: "my-root-token-qwerty12345"
       VAULT_ADDR: "http://0.0.0.0:8200"
+      TZ: Europe/Amsterdam
     cap_add:
       - IPC_LOCK
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 5s
@@ -40,9 +48,12 @@ services:
       vault:
         condition: service_healthy
     environment:
+      - TZ=Europe/Amsterdam
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   # 4. Ресурс-сервис (бывший hello-service)
   hello-service:
@@ -51,15 +62,19 @@ services:
     depends_on:
       eureka-server:
         condition: service_healthy
-      photo-db:               # <--- ДОБАВЛЕНО: ждем свою базу
+      photo-db:
         condition: service_healthy
     environment:
+      - TZ=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_APPLICATION_NAME=HELLO-SERVICE
       - SERVER_PORT=8083
       - SPRING_DATASOURCE_URL=jdbc:postgresql://photo-db:5432/photo_album
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   # 5. Сервис авторизации
   auth-service:
@@ -72,15 +87,19 @@ services:
         condition: service_healthy
       vault:
         condition: service_healthy
-      auth-db:                # <--- Переименовал для ясности
+      auth-db:
         condition: service_healthy
     environment:
+      - TZ=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   # 6. БД Авторизации
   auth-db:
@@ -90,6 +109,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: auth_db
+      TZ: Europe/Amsterdam
     ports:
       - "5433:5432"
     healthcheck:
@@ -99,6 +119,7 @@ services:
       retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
 
   # 7. БД Фото-альбома
   photo-db:
@@ -108,6 +129,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: photo_album
+      TZ: Europe/Amsterdam
     ports:
       - "5434:5432"
     healthcheck:
@@ -117,6 +139,8 @@ services:
       retries: 5
     volumes:
       - photo_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+
   # 8. Сервис исключений (Централизованный логгер)
   exception-service:
     build: ./b9-exception-service
@@ -129,11 +153,15 @@ services:
       exception-db:
         condition: service_healthy
     environment:
+      - TZ=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SERVER_PORT=8085
       - SPRING_DATASOURCE_URL=jdbc:postgresql://exception-db:5432/exception_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   # 9. БД для логов исключений
   exception-db:
@@ -143,6 +171,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: exception_db
+      TZ: Europe/Amsterdam
     ports:
       - "5435:5432"
     healthcheck:
@@ -152,8 +181,9 @@ services:
       retries: 5
     volumes:
       - exception_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
 
 volumes:
   postgres_data:
   photo_data:
-  exception_data: # <--- Добавлено для хранения логов ошибок
+  exception_data:

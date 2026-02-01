@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-import com.wixsite.mupbam1.b_hello_world.repository.ResourseRepository;
+import com.wixsite.mupbam1.b_hello_world.repository.ResourceRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HelloController {
 
-    private final ResourseRepository resourseRepository; // Внедряем репозиторий
+    private final ResourceRepository resourseRepository; // Внедряем репозиторий
 
     @GetMapping("/hello")
     public String hello(
