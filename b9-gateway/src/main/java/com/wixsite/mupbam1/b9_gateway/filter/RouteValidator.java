@@ -13,7 +13,8 @@ public class RouteValidator {
     public static final List<String> openApiEndpoints = List.of(
             "/auth/",    // Регистрация, логин, генерация токенов
             "/eureka",   // Сервис-дискавери
-            "/actuator"  // Метрики и проверка здоровья
+            "/actuator",  // Метрики и проверка здоровья
+            "/client/**" // Чтобы пускало на главную
     );
 
     public Predicate<ServerHttpRequest> isSecured =

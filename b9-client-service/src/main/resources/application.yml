@@ -1,0 +1,21 @@
+server:
+  port: 8086
+  servlet:
+    context-path: /client
+
+spring:
+  application:
+    name: b9-client-service
+  thymeleaf:
+    cache: false # Выключаем кэш для разработки, чтобы видеть изменения HTML сразу
+    prefix: classpath:/templates/
+    suffix: .html
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
+        .auth-box { padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9; }
+        .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .btn-logout { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Система «Аккредитация 2026»</h1>
+    
+    <div class="auth-box">
+        <div th:if="${!authenticated}">
+            <p>Статус: <strong>Гость</strong></p>
+            <p>Для доступа к ресурсам необходимо авторизоваться.</p>
+            <a class="btn" href="http://localhost:8080/auth/login">Войти в систему</a>
+        </div>
+
+        <div th:if="${authenticated}">
+            <p>Статус: <strong>Авторизован</strong></p>
+            <p>Добро пожаловать, <span th:text="${username}" style="color: blue; font-weight: bold;"></span>!</p>
+            <hr>
+            <a class="btn" href="http://localhost:8080/hello/api/users">📂 Список пользователей</a>
+            <a class="btn btn-logout" href="http://localhost:8080/auth/logout">Выйти</a>
+        </div>
+    </div>
+</body>
+</html>

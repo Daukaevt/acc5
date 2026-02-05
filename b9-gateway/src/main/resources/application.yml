@@ -30,6 +30,11 @@ spring:
           predicates:
             - Path=/auth/**
 
+        - id: client-service
+          uri: lb://CLIENT-SERVICE
+          predicates:
+            - Path=/client/**
+
       default-filters:
         - PreserveHostHeader
     vault:
