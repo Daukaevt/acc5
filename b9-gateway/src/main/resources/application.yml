@@ -9,26 +9,31 @@ spring:
   cloud:
     gateway:
       routes:
-        # Маршрут для сервиса исключений (Диагностика)
-        - id: exception_service_route
-          uri: lb://EXCEPTION-SERVICE # Имя из Eureka
-          predicates:
-            - Path=/exception/**
-          filters:
-            - StripPrefix=1
-            - AuthenticationFilter
-
+        # 1. Ресурс-сервис (теперь защищен и токеном, и в перспективе ключом)
         - id: hello_world_route
           uri: lb://HELLO-SERVICE
           predicates:
             - Path=/hello/**
           filters:
             - AuthenticationFilter
-            
+            #- StripPrefix=1
+
+        # 2. Сервис исключений
+        - id: exception_service_route
+          uri: lb://EXCEPTION-SERVICE
+          predicates:
+            - Path=/exception/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+
+        # 3. Сервис авторизации (открыт для всех)
         - id: auth_service_route
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/auth/**
+          filters:
+            #- StripPrefix=1
 
         - id: client-service
           uri: lb://CLIENT-SERVICE

@@ -55,7 +55,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
 
-  # 4. Ресурс-сервис (бывший hello-service)
+  # 4. Ресурс-сервис (Hello-service)
   hello-service:
     build: ./b9-hello-world-service
     container_name: b9-hello-service
@@ -143,7 +143,7 @@ services:
       - photo_data:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
 
-  # 8. Сервис исключений (Централизованный логгер)
+  # 8. Сервис исключений
   exception-service:
     build: ./b9-exception-service
     container_name: b9-exception-service
