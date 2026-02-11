@@ -55,4 +55,3 @@ start.sh
 
 # Данные Vault (если ты настроил сохранение на диск)
 vault/data/
-b9-client-service/
