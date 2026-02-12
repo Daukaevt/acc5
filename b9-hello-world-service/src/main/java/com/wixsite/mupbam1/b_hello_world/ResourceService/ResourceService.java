@@ -29,6 +29,10 @@ public class ResourceService {
         }
         return pictures;
     }
+    
+    public List<Picture> findAllByUsername(String username) {
+        return resourceRepository.findByUsername(username);
+    }
 
     public Picture findUserById(Long id) {
         return resourceRepository.findById(id)

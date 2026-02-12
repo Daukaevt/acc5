@@ -11,10 +11,10 @@ public class Picture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    private String description; // Было title
+    private String description;
     
-    @Column(name = "owner_key") // Указываем точное имя колонки в БД
-    private String ownerKey;
+    // Теперь это поле — главный идентификатор владельца
+    private String username; 
     
     private String url;
 }

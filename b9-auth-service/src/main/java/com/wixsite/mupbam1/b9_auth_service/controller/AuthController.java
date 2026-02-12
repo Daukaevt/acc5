@@ -52,7 +52,7 @@ public class AuthController {
         cookie.setPath("/");  
         response.addCookie(cookie);
         
-        return "redirect:/hello";
+        return "redirect:http://localhost:8080/hello/api/users/my";
     }
 
     @PostMapping("/register")
