@@ -3,14 +3,14 @@ set -e
 
 echo "🚀 Запуск системы Аккредитация-2026..."
 
-# 1. Сборка JAR-файлов (добавили b9-client-service)
+# 1. Сборка JAR-файлов
 SERVICES=(
   "b9-eureka" 
   "b9-auth-service" 
   "b9-gateway" 
   "b9-hello-world-service" 
-  "b9-exception-service" 
-  "b9-client-service"
+  "b9-exception-service"
+  "b9-client-service" # <--- ВЕРНУЛИ
 )
 
 for service in "${SERVICES[@]}"; do
@@ -38,10 +38,11 @@ echo "🔐 Шаг 2: Прошиваем секрет в Vault..."
 docker exec -e VAULT_TOKEN="my-root-token-qwerty12345" vault vault kv put secret/application \
     jwt.secret="your-super-secret-key-that-is-at-least-32-charjjjloakmbvlkamkvmjk"
 
-# 4. Запуск прикладных сервисов (добавили client-service)
+# 4. Запуск прикладных сервисов
 echo "🚀 Шаг 3: Поднимаем прикладные сервисы и клиентский интерфейс..."
-docker compose up -d --build hello-service api-gateway auth-service exception-service client-service
+docker compose up -d --build hello-service api-gateway auth-service exception-service client-service # <--- ВЕРНУЛИ
 
+# ... (дальше импорт SQL без изменений) ...
 # 5. Импорт данных с проверкой готовности БД
 if [ -f "photo_album_final.sql" ]; then
     echo "⏳ Ждем готовности photo_db для импорта..."

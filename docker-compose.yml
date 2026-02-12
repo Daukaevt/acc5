@@ -184,8 +184,8 @@ services:
     volumes:
       - exception_data:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
-      
-  # 10. Клиентский сервис (Frontend/BFF)
+
+  # 10. Клиентский интерфейс
   client-service:
     build: ./b9-client-service
     container_name: b9-client-service
@@ -194,14 +194,14 @@ services:
     depends_on:
       eureka-server:
         condition: service_healthy
+      api-gateway:
+        condition: service_started
     environment:
       - TZ=Europe/Amsterdam
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SERVER_PORT=8086
-      - SPRING_APPLICATION_NAME=CLIENT-SERVICE
+      - GATEWAY_URL=http://api-gateway:8080
     volumes:
-      - /etc/localtime:/etc/localtime:ro     
+      - /etc/localtime:/etc/localtime:ro
 
 volumes:
   postgres_data:
