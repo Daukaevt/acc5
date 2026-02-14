@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Client Data View</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #58a6ff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #161b22;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 600px;
+        }
+        .header {
+            color: #8b949e;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        pre {
+            background: #010409;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #7ee787; /* Зеленый цвет для данных */
+            border: 1px solid #21262d;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        > system.get_session_info()
+    </div>
+
+    <pre th:text="${json_data}"></pre>
+
+    <div class="header" style="border-top: 1px solid #30363d; border-bottom: none; padding-top: 10px; margin-top: 20px;">
+        Status: <span th:text="${json_data.status}" style="color: #d2a8ff;"></span>
+    </div>
+    
+    <a href="/client/" class="back-link">← Вернуться на главную</a>
+</div>
+
+</body>
+</html>

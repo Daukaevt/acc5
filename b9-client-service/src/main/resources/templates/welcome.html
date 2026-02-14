@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Аккредитация 2026</title>
-    <link rel="stylesheet" th:href="@{/style.css}">
+<meta charset="UTF-8">
+<title>Аккредитация 2026</title>
+<link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 
-    <header class="header">
-        <div class="status-bar">
-            Статус: <span id="status-text">Гость</span>
-        </div>
-    </header>
+	<header class="header">
+		<div class="status-bar">
+			Статус: <span id="status-text">Гость</span>
+		</div>
+	</header>
 
-    <main class="content">
-        <div class="album-wrapper">
-            <img th:src="@{/images/album.jpg}" alt="Обложка альбома" class="album-img">
-            
-            <a href="http://localhost:8080/auth/login" id="auth-link" class="overlay-link">
-                <span id="user-display">ВХОД</span>
-            </a>
-        </div>
-    </main>
+	<main class="content">
+		<div class="album-wrapper">
+			<img th:src="@{/images/album.jpg}" alt="Обложка альбома"
+				class="album-img"> <a
+				th:href="@{http://localhost:8080/auth/login(redirect_uri='http://localhost:8080/client/data')}"
+				id="auth-link" class="overlay-link"> <span id="user-display">ВХОД</span>
+			</a>
+		</div>
+	</main>
 
-    <script th:src="@{/script.js}"></script>
+	<script th:src="@{/script.js}"></script>
 </body>
 </html>

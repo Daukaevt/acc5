@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,19 +39,35 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String loginPage() { 
+    public String loginPage(
+    		@RequestParam(required = false) String redirect_uri,
+    		Model model
+    		) {
+        // Прокидываем redirect_uri из URL в шаблон Thymeleaf
+        model.addAttribute("redirect_uri", redirect_uri);
+        System.out.println("++++++++++++++@GetMapping/login+++++++++" +redirect_uri + "------------");
         return "login"; 
     }
     
     @PostMapping("/login")
-    public String login(@RequestParam String username, @RequestParam String password,
+    public String login(@RequestParam String username, 
+                        @RequestParam String password,
+                        @RequestParam(required = false) String redirect_uri, // Получаем адрес возврата
                         HttpServletResponse response) {
+        
         String token = authService.login(username, password);
         
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");  
         response.addCookie(cookie);
+        
+        // ЛОГИКА РЕДИРЕКТА:
+        // Если redirect_uri передан, идем туда. Если нет — на дефолтный JSON
+        if (redirect_uri != null && !redirect_uri.isEmpty()) {
+        	System.out.println("!!!!!!!!!!!!!!!!!!!!!!!redirect_uri!!!!!!!!!!!!!!!!!!");
+            return "redirect:" + redirect_uri;
+        }
         
         return "redirect:http://localhost:8080/hello/api/users/my";
     }

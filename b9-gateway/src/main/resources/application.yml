@@ -36,9 +36,11 @@ spring:
             #- StripPrefix=1
 
         - id: client-service
-          uri: lb://CLIENT-SERVICE
+          uri: lb://B9-CLIENT-SERVICE
           predicates:
             - Path=/client/**
+          filters:
+            - AuthenticationFilter
 
       default-filters:
         - PreserveHostHeader
