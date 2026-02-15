@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api")
 public class ClientDataController {
 
     private final RestTemplate restTemplate = new RestTemplate();

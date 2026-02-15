@@ -1,0 +1,137 @@
+@charset "UTF-8";
+
+:root {
+    --bg-color: #e9ecef;
+    --white: #ffffff;
+    --text-main: #333333;
+    --text-muted: #777777;
+    --accent: #5d5d5d;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background: var(--white);
+    padding: 40px 20px;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+    background: #f8f9fa;
+    color: var(--text-main);
+}
+
+.nav-link .icon { margin-right: 12px; }
+
+.nav-divider {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+/* Main Content Area */
+.content-area {
+    flex: 1;
+    padding: 40px;
+    max-width: 1200px;
+}
+
+/* Floating Header */
+.main-header {
+    background: var(--white);
+    padding: 20px 40px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom: 40px;
+}
+
+.main-header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.user-pill {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 30px;
+    font-size: 14px;
+}
+
+.avatar-circle {
+    background: #eee;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+/* Photo Grid */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.photo-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.photo-card:hover {
+    transform: translateY(-8px);
+}
+
+.photo-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.photo-card-info {
+    padding: 20px;
+}
+
+.photo-card-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+}
+
+.photo-card-info p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}

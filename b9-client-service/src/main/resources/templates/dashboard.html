@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Photo Album</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <nav>
+                <a href="#" class="nav-link active"><span class="icon">🏠</span> Home</a>
+                <a href="#" class="nav-link"><span class="icon">👤</span> Profile</a>
+                <a href="#" class="nav-link"><span class="icon">🖼️</span> Albums</a>
+                <hr class="nav-divider">
+                <a th:href="@{http://localhost:8080/auth/logout}" class="nav-link">
+                    <span class="icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <main class="content-area">
+            <header class="main-header">
+                <h1>My Photo Album</h1>
+                <div class="user-pill">
+                    <span class="avatar-circle">👤</span>
+                    <span id="display-username">Welcome, Guest</span>
+                </div>
+            </header>
+
+            <div class="photo-grid" id="photo-gallery">
+                <div class="loading-state">Загружаем ваш альбом...</div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Аккредитация 2026</title>
-<link rel="stylesheet" th:href="@{/style.css}">
+<link rel="stylesheet" th:href="@{/css/welcome.css}">
 </head>
 <body>
 
@@ -15,7 +15,7 @@
 
 	<main class="content">
 		<div class="album-wrapper">
-			<img th:src="@{/images/album.jpg}" alt="Обложка альбома"
+			<img th:src="@{/images/welcome.jpg}" alt="Обложка альбома"
 				class="album-img"> <a
 				th:href="@{http://localhost:8080/auth/login(redirect_uri='http://localhost:8080/client/data')}"
 				id="auth-link" class="overlay-link"> <span id="user-display">ВХОД</span>
@@ -23,6 +23,6 @@
 		</div>
 	</main>
 
-	<script th:src="@{/script.js}"></script>
+	<script th:src="@{/js/welcome.js}"></script>
 </body>
 </html>

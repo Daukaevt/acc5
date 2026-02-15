@@ -20,39 +20,8 @@ public class WelcomeController {
     public String welcomePage() {
         return "welcome";
     }
-    /*
     @GetMapping("/data")
-    public String getClientDataPage(HttpServletRequest request, Model model) {
-        String username = request.getHeader("X-User-Name");
-        
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("status", username != null ? "authenticated" : "anonymous");
-        data.put("username", username != null ? username : "Guest");
-        data.put("timestamp", LocalDateTime.now().toString());
-        data.put("service", "b9-client-service");
-
-        // Передаем объект как Map, Thymeleaf сам может работать с ним, 
-        // но для вывода "как в JSON" мы передадим его в модель
-        model.addAttribute("json_data", data);
-        
-        return "data_view"; // Имя нашего нового HTML файла
-    }
-    */
- // Новый эндпоинт прямо на 8086
-    @GetMapping("/api/profile")
-    @ResponseBody // Указывает, что возвращаем JSON, а не HTML-шаблон
-    public Map<String, String> getUserProfile(HttpServletRequest request) {
-        // Вытаскиваем имя, которое Гейтвей прокинул в заголовке
-        String username = request.getHeader("X-User-Name");
-        
-        Map<String, String> data = new HashMap<>();
-        if (username != null && !username.isEmpty()) {
-            data.put("username", username);
-            data.put("status", "authenticated");
-        } else {
-            data.put("username", "Guest");
-            data.put("status", "anonymous");
-        }
-        return data; 
+    public String dashboardPage() {
+        return "dashboard"; // Отдает templates/dashboard.html
     }
 }
