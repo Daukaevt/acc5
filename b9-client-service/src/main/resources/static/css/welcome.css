@@ -70,3 +70,37 @@ body {
     color: #fff;
     text-shadow: 0 0 15px #d4af37;
 }
+
+/* welcome.css */
+
+.radio-mini-player {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+    opacity: 0.7; /* Делаем полупрозрачным */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    max-width: 180px; /* Сильно ограничиваем ширину */
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.radio-mini-player:hover {
+    opacity: 1; /* Проявляется при наведении */
+    transform: scale(1.02);
+}
+
+/* Стилизуем внутренности виджета Radiopotok */
+/* Взламываем их стили через селекторы, если они позволяют */
+.radio-mini-player iframe, 
+.radio-mini-player div {
+    max-width: 100% !important;
+    transform: scale(0.85); /* Уменьшаем масштаб самого содержимого */
+    transform-origin: bottom left;
+}
+
+/* Прячем лишние текстовые ссылки под плеером, если они есть */
+.RP-LINK {
+    display: none !important;
+}

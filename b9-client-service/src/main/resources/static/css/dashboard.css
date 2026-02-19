@@ -216,3 +216,43 @@ body {
     font-size: 1.2rem;
     font-weight: 300;
 }
+
+/* Добавь это в dashboard.css */
+
+.modal-content {
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain; /* По умолчанию вписываем */
+    cursor: zoom-in;
+    transition: transform 0.3s ease, max-width 0.3s ease, max-height 0.3s ease;
+}
+
+/* Класс для истинного размера */
+.modal-content.full-size {
+    max-width: none;
+    max-height: none;
+    cursor: zoom-out;
+}
+
+/* Добавь в dashboard.css */
+
+#photo-modal {
+    /* Чтобы при зуме можно было скроллить картинку */
+    overflow: auto;
+    padding: 20px;
+}
+
+.modal-content {
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+    cursor: zoom-in; /* Подсказка пользователю */
+}
+
+/* Эффект "истинного размера" */
+.modal-content.full-size {
+    max-width: none;
+    max-height: none;
+    cursor: zoom-out;
+}
