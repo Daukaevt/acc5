@@ -55,3 +55,41 @@ start.sh
 
 # Данные Vault (если ты настроил сохранение на диск)
 vault/data/
+
+# Git - КРИТИЧЕСКИ ВАЖНО для скорости
+# Папка .git может весить сотни мегабайт и содержать тысячи мелких файлов. 
+# На Windows это главный тормоз при "Sending build context to Docker daemon".
+.git
+.gitignore
+.dockerignore
+
+# Docker
+docker-compose*.yml
+docker-compose.override.yml
+**/Dockerfile
+**/Dockerfile.*
+
+# Системные файлы Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# SQL дампы (если они лежат в корне)
+# Их лучше монтировать через volume в docker-compose, а не запекать в образ
+*.sql
+
+# Логи и временные файлы
+**/logs/
+*.log
+**/temp/
+**/tmp/
+
+# Frontend (на случай, если в b9-client-service есть node.js)
+**/node_modules/
+**/npm-debug.log
+.eslintcache
+
+# Разное
+README.md
+LICENSE
+CONTRIBUTING.md

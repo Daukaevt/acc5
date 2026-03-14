@@ -7,9 +7,6 @@ services:
       - "8761:8761"
     environment:
       - TZ=Europe/Amsterdam
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
       interval: 10s
@@ -28,8 +25,6 @@ services:
       TZ: Europe/Amsterdam
     cap_add:
       - IPC_LOCK
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 5s
@@ -52,8 +47,6 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
 
   # 4. Ресурс-сервис (Hello-service)
   hello-service:
@@ -75,8 +68,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://photo-db:5432/photo_album
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
 
   # 5. Сервис авторизации
   auth-service:
@@ -100,8 +91,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
 
   # 6. БД Авторизации
   auth-db:
@@ -121,7 +110,6 @@ services:
       retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
 
   # 7. БД Фото-альбома
   photo-db:
@@ -141,7 +129,8 @@ services:
       retries: 5
     volumes:
       - photo_data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
+      # АВТОМАТИЧЕСКИЙ ИМПОРТ ПРИ СТАРТЕ
+      - ./photo_album_final.sql:/docker-entrypoint-initdb.d/init.sql
 
   # 8. Сервис исключений
   exception-service:
@@ -162,8 +151,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://exception-db:5432/exception_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
 
   # 9. БД для логов исключений
   exception-db:
@@ -183,7 +170,6 @@ services:
       retries: 5
     volumes:
       - exception_data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
 
   # 10. Клиентский интерфейс
   client-service:
@@ -200,8 +186,6 @@ services:
       - TZ=Europe/Amsterdam
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - GATEWAY_URL=http://api-gateway:8080
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
 
 volumes:
   postgres_data:
