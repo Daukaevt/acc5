@@ -1,78 +1,41 @@
 #!/bin/bash
+set -e 
 
-# Останавливаем скрипт при любой ошибке (но для фоновых задач сделаем ручную проверку)
-set +e 
+echo "🚀 Starting Acc5 System (Sequential Mode)..."
 
-echo "🚀 Запуск системы Аккредитация-2026 (Safe Turbo Mode)..."
-
-# 1. Создаем волюм для кэша, если его еще нет
-docker volume create maven-repo > /dev/null 2>&1
-
-# Список сервисов
-SERVICES=(
-  "b9-eureka"
-  "b9-auth-service"
-  "b9-gateway"
-  "b9-hello-world-service"
-  "b9-exception-service"
-  "b9-client-service"
-)
-
-# 2. Сборка JAR-файлов
-echo "📦 Начинаем сборку сервисов..."
+# 1. Сборка (уже проверено, работает)
+SERVICES=("b9-eureka" "b9-auth-service" "b9-gateway" "b9-hello-world-service" "b9-exception-service" "b9-client-service")
 for service in "${SERVICES[@]}"; do
     if [ -d "$service" ]; then
-        echo "🛠 Сборка $service запущена..."
-        # Добавляем небольшую задержку (2 сек), чтобы Maven не дрался за один и тот же файл в кэше при старте
-        sleep 2
-        docker run --rm \
-          -v "$(pwd)/$service":/usr/src/app \
-          -v maven-repo:/root/.m2 \
-          -w /usr/src/app \
-          maven:3.8-openjdk-17 \
-          mvn clean package -DskipTests -q & 
+        echo "🛠 Building $service..."
+        docker run --rm -v "$(pwd)/$service":/usr/src/app -v maven-repo:/root/.m2 -w /usr/src/app maven:3.8-openjdk-17-slim mvn clean package -DskipTests -q
     fi
 done
 
-echo "⏳ Ждем завершения всех сборок. Это может занять пару минут..."
-wait
+# 2. Инфраструктура
+echo "🏗 Starting Foundations (DBs, Vault, Eureka)..."
+docker compose up -d auth-db photo-db exception-db vault eureka-server
 
-# 3. КРИТИЧЕСКАЯ ПРОВЕРКА: Все ли JAR собрались?
-echo "🔍 Проверяем артефакты..."
-FAILED=0
-for service in "${SERVICES[@]}"; do
-    # Ищем jar в папке target
-    JAR_FILE=$(find "$service/target" -name "*.jar" 2>/dev/null)
-    if [ -z "$JAR_FILE" ]; then
-        echo "❌ ОШИБКА: Сервис $service не собрался (JAR не найден)."
-        FAILED=1
-    fi
+# 3. Ждем Vault (он капризный)
+echo "🔐 Waiting for Vault..."
+until [ "$(docker inspect -f '{{.State.Health.Status}}' vault)" == "healthy" ]; do
+  sleep 2
 done
 
-if [ $FAILED -eq 1 ]; then
-    echo "🛑 Остановка: один или несколько сервисов не собрались. Проверь логи Maven выше."
-    exit 1
-fi
-
-echo "✅ Все JAR-файлы успешно собраны!"
-
-# 4. Поднимаем инфраструктуру
-echo "🏗 Шаг 1: Поднимаем базы и Eureka..."
-docker compose up -d --build eureka-server vault auth-db photo-db exception-db
-
-# 5. Проверка Vault
-echo "🔐 Ждем готовности Vault..."
-until docker exec vault vault status > /dev/null 2>&1; do
-  sleep 1
+# 4. Ждем Эврику (смотрим прямо в логи на ключевое слово)
+echo "🔍 Waiting for Eureka to initialize..."
+until docker logs eureka-server 2>&1 | grep -q "Started B9EurekaApplication"; do
+  echo "⏳ Eureka is warming up..."
+  sleep 3
 done
-echo "✅ Vault готов!"
+echo "✅ Eureka is Ready!"
 
-# Настройка секретов
-docker exec -e VAULT_TOKEN="my-root-token-qwerty12345" vault vault kv put secret/application \
-    jwt.secret="your-super-secret-key-that-is-at-least-32-charjjjloakmbvlkamkvmjk"
+# 5. Секреты
+echo "⚙️ Setting Vault secrets..."
+docker exec -e VAULT_TOKEN="my-root-token-qwerty12345" vault vault kv put secret/application jwt.secret="your-super-secret-key-that-is-at-least-32-charjjjloakmbvlkamkvmjk"
 
-# 6. Запуск прикладных сервисов
-echo "🚀 Шаг 2: Поднимаем основные сервисы..."
+# 6. Запуск остального
+echo "🚀 Launching Microservices..."
 docker compose up -d --build hello-service api-gateway auth-service exception-service client-service
 
-echo "✨ Готово! Система доступна: http://localhost:8080/client/"
+echo "✨ System is fully operational!"
