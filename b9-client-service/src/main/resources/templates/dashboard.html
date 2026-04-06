@@ -23,24 +23,46 @@
 		</aside>
 
 		<main class="content-area">
+			<!-- В HEADER оставляем только заголовок и "Добавить" -->
 			<header class="main-header">
-				<h1>My Photo Album</h1>
+				<div class="header-left">
+					<h1>My Photo Album</h1>
+					<div class="header-actions">
+						<button id="add-photo-btn" class="btn btn-add">
+							<span class="icon">➕</span> Добавить
+						</button>
+					</div>
+				</div>
+
 				<div class="user-pill">
 					<span class="avatar-circle">👤</span> <span id="display-username">Welcome,
 						Guest</span>
 				</div>
 			</header>
 
+
 			<div class="photo-grid" id="photo-gallery">
 				<div class="loading-state">Загружаем ваш альбом...</div>
 			</div>
 		</main>
 	</div>
-	<!-- Модульное окно -->>
+	<!-- Модульное окно -->
+	>
+	<!-- МОДАЛЬНОЕ ОКНО (Обновленная структура) -->
 	<div id="photo-modal" class="modal">
-		<span class="modal-close">&times;</span> <img class="modal-content"
-			id="full-photo">
-		<div id="modal-caption"></div>
+		<span class="modal-close">&times;</span>
+
+		<div class="modal-container">
+			<img class="modal-content" id="full-photo">
+
+			<div class="modal-footer">
+				<div id="modal-caption"></div>
+				<!-- Кнопка удаления теперь здесь -->
+				<button id="delete-photo-btn" class="btn-delete-modal">
+					<span class="icon">🗑️</span> Удалить фото
+				</button>
+			</div>
+		</div>
 	</div>
 	<script th:src="@{/js/dashboard.js}"></script>
 </body>

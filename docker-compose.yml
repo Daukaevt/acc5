@@ -1,5 +1,5 @@
 services:
-  # 1. Сервер имен (Eureka)
+  # 1. Eureka
   eureka-server:
     build: ./b9-eureka
     container_name: eureka-server
@@ -7,13 +7,18 @@ services:
       - "8761:8761"
     environment:
       - TZ=Europe/Amsterdam
+      - JAVA_OPTS=-Xms64m -Xmx256m
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # 2. Хранилище секретов (Vault)
+  # 2. Vault
   vault:
     image: hashicorp/vault:latest
     container_name: vault
@@ -21,17 +26,23 @@ services:
       - "8200:8200"
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: "my-root-token-qwerty12345"
-      VAULT_ADDR: "http://0.0.0.0:8200"
+      VAULT_ADDR: "http://127.0.0.1:8200"
       TZ: Europe/Amsterdam
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 5s
+      # Проверка открытия порта без использования curl/wget
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 8200 || exit 1"]
+      interval: 3s
       timeout: 2s
-      retries: 3
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
-  # 3. Шлюз (Gateway)
+
+  # 3. Gateway
   api-gateway:
     build: ./b9-gateway
     container_name: b9-api-gateway
@@ -47,8 +58,13 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
+      - JAVA_OPTS=-Xms64m -Xmx256m
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # 4. Ресурс-сервис (Hello-service)
+  # 4. Hello-service
   hello-service:
     build: ./b9-hello-world-service
     container_name: b9-hello-service
@@ -61,15 +77,19 @@ services:
         condition: service_healthy
     environment:
       - TZ=Europe/Amsterdam
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam -Xms64m -Xmx256m
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_APPLICATION_NAME=HELLO-SERVICE
       - SERVER_PORT=8083
       - SPRING_DATASOURCE_URL=jdbc:postgresql://photo-db:5432/photo_album
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # 5. Сервис авторизации
+  # 5. Auth-service
   auth-service:
     build: ./b9-auth-service
     container_name: b9-auth-service
@@ -84,15 +104,19 @@ services:
         condition: service_healthy
     environment:
       - TZ=Europe/Amsterdam
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam -Xms64m -Xmx256m
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_CLOUD_VAULT_TOKEN=my-root-token-qwerty12345
       - SPRING_CLOUD_VAULT_URI=http://vault:8200
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # 6. БД Авторизации
+  # 6. Auth-db
   auth-db:
     image: postgres:15
     container_name: auth_db
@@ -110,8 +134,13 @@ services:
       retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./auth_init.sql:/docker-entrypoint-initdb.d/init.sql   # 👈 ВОТ ЭТО ДОБАВЬ
+    deploy:
+      resources:
+        limits:
+          memory: 160M
 
-  # 7. БД Фото-альбома
+  # 7. Photo-db
   photo-db:
     image: postgres:15
     container_name: photo_db
@@ -129,10 +158,13 @@ services:
       retries: 5
     volumes:
       - photo_data:/var/lib/postgresql/data
-      # АВТОМАТИЧЕСКИЙ ИМПОРТ ПРИ СТАРТЕ
       - ./photo_album_final.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      resources:
+        limits:
+          memory: 160M
 
-  # 8. Сервис исключений
+  # 8. Exception-service
   exception-service:
     build: ./b9-exception-service
     container_name: b9-exception-service
@@ -145,14 +177,18 @@ services:
         condition: service_healthy
     environment:
       - TZ=Europe/Amsterdam
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Amsterdam -Xms64m -Xmx256m
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SERVER_PORT=8085
       - SPRING_DATASOURCE_URL=jdbc:postgresql://exception-db:5432/exception_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # 9. БД для логов исключений
+  # 9. Exception-db
   exception-db:
     image: postgres:15
     container_name: exception_db
@@ -170,8 +206,12 @@ services:
       retries: 5
     volumes:
       - exception_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 160M
 
-  # 10. Клиентский интерфейс
+  # 10. Client-service
   client-service:
     build: ./b9-client-service
     container_name: b9-client-service
@@ -184,10 +224,16 @@ services:
         condition: service_started
     environment:
       - TZ=Europe/Amsterdam
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx256m
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - GATEWAY_URL=http://api-gateway:8080
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
 volumes:
   postgres_data:
   photo_data:
   exception_data:
+

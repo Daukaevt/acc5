@@ -31,6 +31,7 @@ public class ResourceService {
     }
     
     public List<Picture> findAllByUsername(String username) {
+    	
         return resourceRepository.findByUsername(username);
     }
 
