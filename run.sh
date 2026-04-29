@@ -46,7 +46,7 @@ docker exec vault sh -c "VAULT_TOKEN=my-root-token-qwerty12345 vault kv put secr
 
 # 6. Запуск остального
 echo "🚀 Launching Microservices..."
-docker compose up -d --build hello-service api-gateway auth-service exception-service client-service
+docker compose up -d hello-service api-gateway auth-service exception-service client-service
 
 echo "✨ System is fully operational!"
 
